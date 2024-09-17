@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Book, Plus, Edit, Trash2 } from 'lucide-react'
+import { Book, Plus, Edit, Trash2, UserPlus } from 'lucide-react'
 import BookForm from '../components/BookForm'
+import AuthorForm from '../components/AuthorForm'
 
 function BookList() {
 const [books, setBooks] = useState([])
-const [isFormOpen, setIsFormOpen] = useState(false)
+const [isBookFormOpen, setIsBookFormOpen] = useState(false)
+const [isAuthorFormOpen, setIsAuthorFormOpen] = useState(false)
 const [editingBook, setEditingBook] = useState(null)
 
 useEffect(() => {
@@ -37,7 +39,7 @@ const handleAddBook = async (newBook) => {
     })
     if (response.ok) {
         fetchBooks()
-        setIsFormOpen(false)
+        setIsBookFormOpen(false)
     } else {
         console.error('Failed to add book')
     }
@@ -59,7 +61,7 @@ const handleUpdateBook = async (updatedBook) => {
     })
     if (response.ok) {
         fetchBooks()
-        setIsFormOpen(false)
+        setIsBookFormOpen(false)
         setEditingBook(null)
     } else {
         console.error('Failed to update book')
@@ -90,13 +92,22 @@ return (
         <Book className="mr-2" />
         Book List
     </h2>
-    <button
-        onClick={() => setIsFormOpen(true)}
-        className="mb-4 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors flex items-center"
-    >
+    <div className="flex justify-between mb-4">
+        <button
+        onClick={() => setIsBookFormOpen(true)}
+        className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors flex items-center"
+        >
         <Plus className="mr-2" />
         Add Book
-    </button>
+        </button>
+        <button
+        onClick={() => setIsAuthorFormOpen(true)}
+        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center"
+        >
+        <UserPlus className="mr-2" />
+        Add Author
+        </button>
+    </div>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {books.map((book) => (
         <div key={book.isbn} className="bg-white p-4 rounded-lg shadow-md">
@@ -108,7 +119,7 @@ return (
             <button
                 onClick={() => {
                 setEditingBook(book)
-                setIsFormOpen(true)
+                setIsBookFormOpen(true)
                 }}
                 className="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 transition-colors"
             >
@@ -124,14 +135,19 @@ return (
         </div>
         ))}
     </div>
-    {isFormOpen && (
+    {isBookFormOpen && (
         <BookForm
         book={editingBook}
         onSubmit={editingBook ? handleUpdateBook : handleAddBook}
         onClose={() => {
-            setIsFormOpen(false)
+            setIsBookFormOpen(false)
             setEditingBook(null)
         }}
+        />
+    )}
+    {isAuthorFormOpen && (
+        <AuthorForm
+        onClose={() => setIsAuthorFormOpen(false)}
         />
     )}
     </div>

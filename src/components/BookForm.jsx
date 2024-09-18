@@ -6,20 +6,60 @@ const [title, setTitle] = useState('')
 const [author, setAuthor] = useState('')
 const [isbn, setIsbn] = useState('')
 const [publishedYear, setPublishedYear] = useState('')
+const [authors, setAuthors] = useState([])
+const [isLoading, setIsLoading] = useState(true)
+const [error, setError] = useState(null)
 
 useEffect(() => {
     if (book) {
-    setTitle(book.title)
-    setAuthor(book.author)
-    setIsbn(book.isbn)
-    setPublishedYear(book.publishedYear)
+    setTitle(book.title || '')
+    setAuthor(book.authorId ? book.authorId.toString() : '')
+    setIsbn(book.isbn || '')
+    setPublishedYear(book.publishedYear || '')
+    } else {
+    // Réinitialiser les champs si aucun livre n'est fourni
+    setTitle('')
+    setAuthor('')
+    setIsbn('')
+    setPublishedYear('')
     }
+    fetchAuthors()
 }, [book])
+
+const fetchAuthors = async () => {
+    try {
+    const response = await fetch('http://localhost:3000/api/authors')
+    if (!response.ok) {
+        throw new Error('Failed to fetch authors')
+    }
+    const data = await response.json()
+    setAuthors(data)
+    setIsLoading(false)
+    } catch (error) {
+    console.error('Error fetching authors:', error)
+    setError('Failed to load authors. Please try again.')
+    setIsLoading(false)
+    }
+}
 
 const handleSubmit = (e) => {
     e.preventDefault()
-    onSubmit({ id: book ? book.id : null, title, author, isbn, publishedYear })
+    if (!author) {
+    alert("Please select an author")
+    return
+    }
+    onSubmit({ id: book ? book.id : null, title, authorId: parseInt(author), isbn, publishedYear })
 }
+
+if (isLoading) {
+    return <div>Loading authors...</div>
+}
+
+if (error) {
+    return <div>Error: {error}</div>
+}
+
+console.log(author)
 
 return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -51,13 +91,20 @@ return (
             <label htmlFor="author" className="block mb-1">
             Author
             </label>
-            <input
-            type="text"
-            id="author"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md"
-            />
+            <select
+                id="author"
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+                required
+                >
+                <option value="">--- Select an author ---</option>
+                {authors.map((authorItem) => (
+                    <option key={authorItem.id} value={authorItem.id.toString()}>
+                    {authorItem.name}
+                    </option>
+                ))}
+            </select>
         </div>
         <div>
             <label htmlFor="isbn" className="block mb-1">
@@ -81,7 +128,6 @@ return (
             id="year"
             value={publishedYear}
             onChange={(e) => setPublishedYear(e.target.value)}
-
             className="w-full px-3 py-2 border rounded-md"
             required
             />

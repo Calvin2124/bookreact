@@ -8,6 +8,7 @@ const [books, setBooks] = useState([])
 const [isBookFormOpen, setIsBookFormOpen] = useState(false)
 const [isAuthorFormOpen, setIsAuthorFormOpen] = useState(false)
 const [editingBook, setEditingBook] = useState(null)
+const [nameAuthor, setNameAuthor] = useState('')
 
 useEffect(() => {
     fetchBooks()
@@ -19,6 +20,7 @@ const fetchBooks = async () => {
     if (response.ok) {
         const data = await response.json()
         setBooks(data)
+        console.log(data)
     } else {
         console.error('Failed to fetch books')
     }
@@ -49,26 +51,30 @@ const handleAddBook = async (newBook) => {
 }
 
 const handleUpdateBook = async (updatedBook) => {
-    console.log(updatedBook.id)
-    try {
+try {
     const response = await fetch(`http://localhost:3000/api/books/update/${updatedBook.id}`, {
-        method: 'PATCH',
-        headers: {
+    method: 'PATCH',
+    headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify(updatedBook),
+    },
+    body: JSON.stringify({
+        title: updatedBook.title,
+        authorId: updatedBook.authorId,
+        isbn: updatedBook.isbn,
+        publishedYear: updatedBook.publishedYear
+    }),
     })
     if (response.ok) {
-        fetchBooks()
-        setIsBookFormOpen(false)
-        setEditingBook(null)
+    fetchBooks()
+    setIsBookFormOpen(false)
+    setEditingBook(null)
     } else {
-        console.error('Failed to update book')
+    console.error('Failed to update book')
     }
-    } catch (error) {
+} catch (error) {
     console.error('Error:', error)
-    }
+}
 }
 
 const handleDeleteBook = async (bookId) => {
@@ -112,7 +118,7 @@ return (
         {books.map((book) => (
         <div key={book.isbn} className="bg-white p-4 rounded-lg shadow-md">
             <h3 className="text-xl font-semibold mb-2">{book.title}</h3>
-            <p className="text-gray-600 mb-1">Author: {book.author}</p>
+            <p className="text-gray-600 mb-1">Author: {book.Author?.name || 'Pas associé'}</p>
             <p className="text-gray-600 mb-1">ISBN: {book.isbn}</p>
             <p className="text-gray-600 mb-4">Year: {book.publishedYear}</p>
             <div className="flex justify-end space-x-2">
